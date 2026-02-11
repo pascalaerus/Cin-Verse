@@ -6,6 +6,7 @@
 <title>CinéVerse | Suggestions</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
 :root {
     --primary-color: #e50914;
@@ -14,57 +15,33 @@
     --text-light: #ffffff;
     --text-gray: #b3b3b3;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height:1.6; }
-header {
-    height: 25vh;
-    background: linear-gradient(rgba(0,0,0,0.8), rgba(15,15,15,1)), 
-                url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1350&q=80');
-    background-size: cover; background-position: center;
-    display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
-}
-.logo { font-size:2.5rem; font-weight:700; color: var(--primary-color); text-transform:uppercase; letter-spacing:2px; }
-.container { max-width:1100px; margin:20px auto; padding:0 20px; }
-.section-title { text-align:center; margin:20px 0 20px; font-size:1.5rem; color: var(--text-light); border-left:4px solid var(--primary-color); padding-left:10px; display:inline-block; }
-.tabs { display:flex; justify-content:center; gap:20px; margin-bottom:20px; }
-.tab { cursor:pointer; padding:10px 20px; border-radius:5px; background:#222; transition:0.3s; }
-.tab.active { background: var(--primary-color); color:white; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:40px; }
-.card { background: var(--card-bg); padding:15px; border-radius:15px; text-align:center; transition:0.3s; border:1px solid #222; }
-.card:hover { transform:translateY(-5px); border-color: var(--primary-color); }
-.card img { width:100%; border-radius:10px; margin-bottom:10px; }
-.card h3 { margin-bottom:10px; font-size:1.1rem; }
-.card p { font-size:0.85rem; color:#b3b3b3; height:60px; overflow:hidden; margin-bottom:10px; }
-.card .btn { padding:8px 15px; font-size:0.9rem; width:auto; display:inline-block; }
-
-.footer-link { color:#b3b3b3; text-decoration:none; margin-top:10px; display:inline-block; }
-.footer-link:hover { color:var(--primary-color); }
-footer { text-align:center; padding:30px; color: var(--text-gray); font-size:0.8rem; border-top:1px solid #222; margin-top:50px; }
+body { margin:0; font-family:'Poppins', sans-serif; background:var(--bg-dark); color:var(--text-light); }
+header { padding:20px; text-align:center; background:#111; }
+.logo { font-size:2.5rem; font-weight:700; color: var(--primary-color); }
+.container { max-width:1000px; margin:30px auto; padding:0 20px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+.card { background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid #222; display:flex; flex-direction:column; }
+.card img { border-radius:8px; width:100%; height:auto; margin-bottom:10px; }
+.card h3 { font-size:1.1rem; margin:5px 0; }
+.card p { font-size:0.9rem; color:var(--text-gray); overflow:hidden; height:60px; transition:0.3s; }
+.card .request-btn { padding:8px 12px; background:var(--primary-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-top:auto; transition:0.3s; }
+.card .request-btn:hover { background:#ff3b2f; transform:scale(1.05); }
+.card .toggle-overview { background:none; border:none; color:#ffcc00; cursor:pointer; font-size:0.8rem; margin-top:5px; }
+footer { text-align:center; padding:30px; color:var(--text-gray); border-top:1px solid #222; margin-top:50px; }
 </style>
 </head>
 <body>
 
 <header>
-<div class="logo">CinéVerse</div>
-<p>Suggestions de films et séries populaires</p>
+<div class="logo">CinéVerse | Suggestions</div>
+<p>Découvrez les films et séries populaires</p>
+<p><a href="https://ngl.link/pascal_aerus22519" target="_blank" style="color:#ffcc00;text-decoration:underline;">Suggestions anonymes</a></p>
 </header>
 
 <div class="container">
-
-<h2 class="section-title">Explorer</h2>
-<div class="tabs">
-    <div class="tab active" data-type="movie">Films</div>
-    <div class="tab" data-type="tv">Séries</div>
+<div class="grid" id="suggestionsGrid">
+    <!-- Les cartes seront injectées ici -->
 </div>
-
-<div id="suggestionsGrid" class="grid"></div>
-
-<div style="text-align:center; margin-bottom:50px;">
-    <a href="https://ngl.link/pascal_aerus22519" target="_blank" class="footer-link">
-        💬 Faire une suggestion anonyme
-    </a>
-</div>
-
 </div>
 
 <footer>
@@ -72,60 +49,80 @@ footer { text-align:center; padding:30px; color: var(--text-gray); font-size:0.8
 </footer>
 
 <script>
-// TMDB API
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
-const phone = "22996326185"; // ton WhatsApp
+let currentPage = 1;
+let loading = false;
+const grid = document.getElementById("suggestionsGrid");
 
-// Récupérer suggestions populaires
-async function getSuggestions(type="movie"){
-    const res = await fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${TMDB_API_KEY}&language=fr&page=1`);
-    const data = await res.json();
-    return data.results;
+// Fonction pour créer une carte
+function createCard(item, type){
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+    card.innerHTML = `
+        <img src="${poster}" alt="${item.title || item.name}">
+        <h3>${item.title || item.name}</h3>
+        <p class="overview">${item.overview || 'Pas de description.'}</p>
+        <button class="toggle-overview">Voir plus</button>
+        <button class="request-btn">Demander ${type==="movie"?"ce film":"cette série"}</button>
+    `;
+
+    // Voir plus
+    const toggleBtn = card.querySelector(".toggle-overview");
+    const p = card.querySelector(".overview");
+    toggleBtn.addEventListener("click", ()=>{
+        if(p.style.height === "auto"){
+            p.style.height = "60px";
+            toggleBtn.textContent = "Voir plus";
+        } else {
+            p.style.height = "auto";
+            toggleBtn.textContent = "Voir moins";
+        }
+    });
+
+    // Bouton demande WhatsApp
+    card.querySelector(".request-btn").addEventListener("click", ()=>{
+        const phone = "22996326185";
+        const title = item.title || item.name;
+        const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
+                        `🎞️ *Titre:* ${title}%0A`+
+                        `📌 *Type:* ${type==="movie"?"Film":"Série"}%0A`+
+                        `%0A_Demande effectuée depuis le site web._`;
+        window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
+    });
+
+    grid.appendChild(card);
 }
 
-// Afficher suggestions
-async function showSuggestions(type="movie"){
-    const suggestions = await getSuggestions(type);
-    const grid = document.getElementById("suggestionsGrid");
-    grid.innerHTML = "";
+// Charger les suggestions
+async function loadSuggestions(){
+    if(loading) return;
+    loading = true;
 
-    suggestions.forEach(item => {
-        const title = type==="movie" ? item.title : item.name;
-        const overview = item.overview || "Aucun résumé disponible";
-        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "";
+    // Films populaires
+    let res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=fr&page=${currentPage}`);
+    let data = await res.json();
+    data.results.forEach(item => createCard(item, "movie"));
 
-        const card = document.createElement("div");
-        card.classList.add("card");
-        card.innerHTML = `
-            <img src="${poster}" alt="${title}">
-            <h3>${title}</h3>
-            <p>${overview}</p>
-            <button class="btn request-btn">Demander ce ${type==="movie"?"film":"série"}</button>
-        `;
-        grid.appendChild(card);
+    // Séries populaires
+    res = await fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_API_KEY}&language=fr&page=${currentPage}`);
+    data = await res.json();
+    data.results.forEach(item => createCard(item, "tv"));
 
-        // Bouton demande WhatsApp
-        card.querySelector(".request-btn").addEventListener("click", () => {
-            const message = `🎬 *DEMANDE CINÉVERSE* 🎬%0A%0A`+
-                            `📌 *Type:* ${type==="movie"?"Film":"Série"}%0A`+
-                            `🎞️ *Titre:* ${title}%0A`+
-                            `%0A_Demande effectuée depuis la page suggestions._`;
-            window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
-        });
-    });
+    currentPage++;
+    loading = false;
 }
 
-// Onglets
-document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", function(){
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        this.classList.add("active");
-        showSuggestions(this.getAttribute("data-type"));
-    });
+// Scroll infini
+window.addEventListener("scroll", ()=>{
+    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 200){
+        loadSuggestions();
+    }
 });
 
-// Afficher films par défaut
-showSuggestions("movie");
+// Charger la première page
+loadSuggestions();
 </script>
 
 </body>
