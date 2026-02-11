@@ -18,39 +18,42 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height:1.6; }
-header { height: 20vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(15,15,15,1)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1350&q=80'); background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;}
-.logo { font-size:3rem; font-weight:700; color: var(--primary-color); text-transform:uppercase; letter-spacing:2px; }
-.container { max-width:1000px; margin:20px auto; padding:0 20px; }
-.tabs { display:flex; justify-content:center; margin-bottom:20px; gap:10px; }
-.tab-btn { padding:10px 25px; background:#222; border:none; border-radius:5px; cursor:pointer; color:white; transition:0.3s; font-weight:600; }
-.tab-btn.active { background: var(--primary-color); }
+header { height: 20vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; margin-bottom:20px; }
+h1 { font-size:3rem; font-weight:900; margin-bottom:10px; background: linear-gradient(90deg, #E50914,#00A8E1,#1FC1F3,#FF003C,#00A8E1,#FFFFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 5s linear infinite; }
+@keyframes gradientMove {0% {background-position:0% 50%;}50% {background-position:100% 50%;}100% {background-position:0% 50%;}}
+.container { max-width:1100px; margin:0 auto; padding:0 20px; }
+.tabs { display:flex; justify-content:center; gap:20px; margin-bottom:20px; }
+.tab { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; background:#222; transition:0.3s; }
+.tab.active { background: var(--primary-color); color:#fff; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
-.card { background: var(--card-bg); border-radius:15px; padding:15px; border:1px solid #222; display:flex; flex-direction:column; transition:0.3s; }
+.card { background: var(--card-bg); padding:15px; border-radius:15px; text-align:center; border:1px solid #222; transition:0.3s; display:flex; flex-direction:column; }
+.card:hover { transform:translateY(-5px); border-color: var(--primary-color); }
 .card img { width:100%; border-radius:10px; margin-bottom:10px; }
-.card h3 { font-size:1rem; margin-bottom:5px; }
-.card p { font-size:0.9rem; color: var(--text-gray); flex-grow:1; }
-.btn { display:inline-block; padding:10px; background: var(--primary-color); color:white; text-decoration:none; border-radius:5px; font-weight:600; margin-top:5px; text-align:center; cursor:pointer; transition:0.3s; }
+.card h3 { font-size:1.1rem; margin-bottom:10px; }
+.card p { font-size:0.9rem; color: var(--text-gray); max-height:3em; overflow:hidden; transition:0.3s; }
+.card p.expanded { max-height:100em; }
+.btn { margin-top:auto; padding:10px; border:none; border-radius:8px; cursor:pointer; font-weight:600; background:#25D366; color:#fff; transition:0.3s; }
 .btn:hover { opacity:0.9; }
-#loadMore { margin:20px auto; display:block; }
-#season-field { margin:10px 0; display:none; }
-#promo-field { margin:10px 0; display:none; border:1px dashed var(--primary-color); padding:10px; border-radius:5px; color:#ffcc00; }
+#anonymousBtn { display:block; text-align:center; margin:30px auto; padding:12px 20px; background: linear-gradient(45deg,#E50914,#00A8E1,#1FC1F3); border-radius:12px; font-weight:700; color:white; text-decoration:none; transition:0.3s; }
+#anonymousBtn:hover { transform:scale(1.05); opacity:0.9; }
 </style>
 </head>
 <body>
 
 <header>
-<div class="logo">CinéVerse</div>
-<p>Découvrez et demandez vos films et séries</p>
+<h1>CinéVerse Suggestions</h1>
+<p>Découvrez les films et séries populaires, et demandez ce que vous voulez !</p>
 </header>
 
 <div class="container">
 <div class="tabs">
-    <button class="tab-btn active" data-type="movie">Films populaires</button>
-    <button class="tab-btn" data-type="tv">Séries populaires</button>
+<div class="tab active" data-type="movie">Films populaires</div>
+<div class="tab" data-type="tv">Séries populaires</div>
 </div>
 
-<div id="suggestions" class="grid"></div>
-<button id="loadMore" class="btn">Charger plus</button>
+<div id="suggestionsGrid" class="grid"></div>
+
+<a href="https://ngl.link/pascal_aerus22519" id="anonymousBtn" target="_blank">💌 Suggestions anonymes</a>
 </div>
 
 <script>
@@ -59,124 +62,18 @@ const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
 let currentType = "movie";
 let page = 1;
 
-async function fetchSuggestions(type, page) {
-    const res = await fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${TMDB_API_KEY}&language=fr&page=${page}`);
-    const data = await res.json();
-    return data.results;
-}
-
-function truncateText(text, length=120){
-    if(text.length>length) return text.slice(0,length)+'...';
-    return text;
-}
-
-function createCard(item, type){
-    const card = document.createElement("div");
-    card.className = "card";
-    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : "https://via.placeholder.com/300x450?text=Pas+d'affiche";
-    const title = type==="movie" ? item.title : item.name;
-    const overview = item.overview || "Pas de description disponible.";
-    const seasons = type==="tv" ? item.number_of_seasons || 1 : 1;
-
-    card.innerHTML = `
-        <img src="${poster}" alt="${title}">
-        <h3>${title}</h3>
-        <p id="overview">${truncateText(overview)}</p>
-        ${overview.length>120?`<button class="btn seeMore">Voir plus</button>`:""}
-        <div id="season-field" style="display:none;">
-            <label>Saison</label>
-            <select id="season_select"></select>
-        </div>
-        <div id="promo-field">Code Promo Premium requis si >3 saisons</div>
-        <button class="btn request-btn">Demander ${type==="movie"?"ce film":"cette série"}</button>
-        <a href="https://ngl.link/pascal_aerus22519" target="_blank" class="btn" style="background:#0088cc; margin-top:5px;">Suggestions anonymes</a>
-    `;
-
-    // Voir plus
-    const seeMoreBtn = card.querySelector(".seeMore");
-    if(seeMoreBtn){
-        seeMoreBtn.addEventListener("click", ()=>{
-            const p = card.querySelector("#overview");
-            p.textContent = overview;
-            seeMoreBtn.style.display="none";
-        });
-    }
-
-    // Demander film/série
-    const requestBtn = card.querySelector(".request-btn");
-    requestBtn.addEventListener("click", async ()=>{
-        const name = prompt("Votre nom :");
-        const email = prompt("Votre email :");
-        if(!name || !email) return alert("Nom et email obligatoires !");
-        let seasonValue = 1;
-        if(type==="tv"){
-            const seasonSelect = card.querySelector("#season_select");
-            seasonSelect.innerHTML="";
-            for(let i=1;i<=seasons;i++){
-                const opt = document.createElement("option");
-                opt.value=i; opt.textContent="Saison "+i;
-                seasonSelect.appendChild(opt);
-            }
-            card.querySelector("#season-field").style.display="block";
-            seasonValue = prompt(`Saison souhaitée (1-${seasons}) :`) || 1;
-            if(seasons>3){
-                const code = prompt("Série >3 saisons, code Premium :");
-                if(code!=="AMIDEPASCAL") return alert("Vous n'êtes pas Premium !");
-            }
-        }
-
-        // WhatsApp
-        const phone = "22996326185";
-        const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
-                        `👤 *Nom:* ${name}%0A`+
-                        `📌 *Type:* ${type==="movie"?"Film":"Série"}%0A`+
-                        `🎞️ *Titre:* ${title}%0A`+
-                        (type==="tv"?`🎬 *Saison:* ${seasonValue}%0A`:"")+
-                        `%0A_Demande effectuée depuis le site web._`;
-        window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
-
-        // Email
-        emailjs.send("service_7njbqib","template_dzcv9gj",{
-            user_name:name,
-            user_email:email,
-            content_title:title,
-            content_type:type==="movie"?"Film":"Série",
-            season:seasonValue,
-            status:"Demande reçue !"
-        });
-
-        alert("✅ Demande envoyée et mail de confirmation reçu !");
-    });
-
-    return card;
-}
-
-async function loadSuggestions(){
-    const suggestionsDiv = document.getElementById("suggestions");
-    const results = await fetchSuggestions(currentType, page);
-    results.forEach(item=>{
-        suggestionsDiv.appendChild(createCard(item,currentType));
-    });
-    page++;
-}
-
-// Onglets
-document.querySelectorAll(".tab-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentType = btn.dataset.type;
-        page=1;
-        document.getElementById("suggestions").innerHTML="";
+const grid = document.getElementById("suggestionsGrid");
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(tab => {
+    tab.addEventListener("click", ()=>{
+        tabs.forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+        currentType = tab.dataset.type;
+        page = 1;
+        grid.innerHTML="";
         loadSuggestions();
     });
 });
 
-document.getElementById("loadMore").addEventListener("click", loadSuggestions);
-
-// Premier chargement
-loadSuggestions();
-</script>
-
-</body>
-</html>
+async function loadSuggestions(){
+    const res = await fetch(`
