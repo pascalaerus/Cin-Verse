@@ -34,14 +34,21 @@ header {
     text-transform: uppercase;
     letter-spacing: 3px;
     display: inline-block;
-    color: #ff003c;
     white-space: nowrap;
     overflow: hidden;
-    border-right: 0.15em solid #ff003c;
+    border-right: 0.15em solid transparent;
     box-sizing: border-box;
-    animation: float3D 3s ease-in-out infinite alternate, neonPulse 1.5s infinite alternate;
+    background: linear-gradient(90deg, #E50914, #00A8E1, #1FC1F3, #FF003C, #00A8E1, #FFFFFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientMove 5s linear infinite, float3D 3s ease-in-out infinite alternate, neonPulse 1.5s infinite alternate;
 }
 
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 @keyframes float3D {
     0% { transform: translateY(0px) rotateX(0deg) rotateY(-2deg); }
     25% { transform: translateY(-5px) rotateX(2deg) rotateY(1deg); }
@@ -49,15 +56,15 @@ header {
     75% { transform: translateY(-5px) rotateX(1deg) rotateY(-1deg); }
     100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
 }
-
 @keyframes neonPulse {
-    0% { text-shadow: 0 0 5px #ff003c,0 0 10px #ff003c,0 0 20px #ff003c,0 0 40px #ff3399,0 0 60px #ff33cc,0 0 80px #ff66ff; }
-    50% { text-shadow: 0 0 10px #ff003c,0 0 20px #ff003c,0 0 30px #ff003c,0 0 50px #ff66ff,0 0 70px #ff66ff,0 0 100px #ff99ff; }
-    100% { text-shadow: 0 0 5px #ff003c,0 0 10px #ff003c,0 0 20px #ff003c,0 0 40px #ff3399,0 0 60px #ff33cc,0 0 80px #ff66ff; }
+    0% { text-shadow: 0 0 5px #fff, 0 0 10px #E50914, 0 0 20px #00A8E1, 0 0 30px #1FC1F3, 0 0 40px #FF003C; }
+    50% { text-shadow: 0 0 10px #fff, 0 0 20px #FF003C, 0 0 30px #00A8E1, 0 0 40px #1FC1F3, 0 0 50px #FFFFFF; }
+    100% { text-shadow: 0 0 5px #fff, 0 0 10px #E50914, 0 0 20px #00A8E1, 0 0 30px #1FC1F3, 0 0 40px #FF003C; }
 }
 
 .container { max-width:900px; margin:-40px auto 50px; padding:0 20px; }
 .section-title { text-align:center; margin:40px 0 20px; font-size:1.6rem; color: var(--text-light); border-left:4px solid var(--primary-color); padding-left:10px; display:inline-block; }
+
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:40px; }
 .card { background: var(--card-bg); padding:25px; border-radius:15px; text-align:center; transition:0.3s; border:1px solid #222; }
 .card:hover { transform:translateY(-5px); border-color: var(--primary-color); }
@@ -78,14 +85,17 @@ header {
 .contact-item:hover { color: var(--primary-color); }
 
 footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8rem; border-top:1px solid #222; margin-top:50px; }
+
+#btnSuggestions { background: linear-gradient(45deg,#E50914,#00A8E1,#1FC1F3); border-radius:10px; color:white; font-weight:700; padding:12px 25px; text-decoration:none; display:inline-block; margin:20px auto; transition:0.3s; text-align:center; }
+#btnSuggestions:hover { opacity:0.9; transform:scale(1.05);}
 </style>
 </head>
 <body>
 
 <header>
-<div class="logo" id="animatedLogo"></div>
+<div id="animatedLogo" class="logo"></div>
 <p>Demandez vos films et séries préférés</p>
-<a href="suggestions.html" class="btn" style="margin-top:20px;">📽️ Suggestions Populaires</a>
+<a href="suggestions.html" id="btnSuggestions">📽️ Voir les Suggestions</a>
 </header>
 
 <div class="container">
@@ -132,11 +142,15 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 </div>
 
 <div class="form-group" id="season-group" style="display:none;">
-    <label>Saison désirée</label>
+    <label>Saison (pour séries)</label>
     <select id="season_select">
         <option value="1">Saison 1</option>
         <option value="2">Saison 2</option>
         <option value="3">Saison 3</option>
+        <option value="4">Saison 4</option>
+        <option value="5">Saison 5</option>
+        <option value="6">Saison 6</option>
+        <option value="7">Saison 7</option>
     </select>
 </div>
 
@@ -171,36 +185,16 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 </footer>
 
 <script>
-// EmailJS Init
 emailjs.init("nwNk-9LbyO0XHfwql");
-
-// TMDB API key
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
 
-// Typing logo
-const logoText = "CinéVerse";
-const logoElement = document.getElementById("animatedLogo");
-let i = 0;
-function typeLogo() {
-    if (i < logoText.length) {
-        logoElement.innerHTML += logoText.charAt(i);
-        i++;
-        setTimeout(typeLogo, 150);
-    } else { logoElement.style.borderRight = "none"; }
-}
-typeLogo();
-
-// Vérification contenu
 async function checkContentType(title){
-    // Film
     let res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
     let data = await res.json();
-    if(data.results && data.results.length > 0) return {type:"Film", seasons:1};
-
-    // Série
+    if(data.results && data.results.length>0) return {type:"Film", seasons:1};
     res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
     data = await res.json();
-    if(data.results && data.results.length > 0){
+    if(data.results && data.results.length>0){
         const tv = data.results[0];
         const detailRes = await fetch(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${TMDB_API_KEY}&language=fr`);
         const detailData = await detailRes.json();
@@ -209,22 +203,18 @@ async function checkContentType(title){
     return {type:"Inconnu", seasons:0};
 }
 
-// Affiche promo si >3 saisons et saison si série
-function togglePromoField(seasons, type){
+function togglePromoField(seasons){
     const promoDiv = document.getElementById("promo-field");
-    const seasonGroup = document.getElementById("season-group");
-    if(type === "Série") seasonGroup.style.display = "block";
-    else seasonGroup.style.display = "none";
-    promoDiv.style.display = (type==="Série" && seasons>3) ? "block" : "none";
+    promoDiv.style.display = seasons>3 ? "block" : "none";
+    document.getElementById("season-group").style.display = seasons>1 ? "block" : "none";
 }
 
-// Bouton demande
 document.getElementById("submit_request").addEventListener("click", async function(){
-    const name = document.getElementById("user_name").value.trim();
-    const email = document.getElementById("user_email").value.trim();
-    const type = document.getElementById("content_type").value;
-    const title = document.getElementById("movie_name").value.trim();
-    const code = document.getElementById("promo_code").value.trim();
+    const name=document.getElementById("user_name").value.trim();
+    const email=document.getElementById("user_email").value.trim();
+    const type=document.getElementById("content_type").value;
+    const title=document.getElementById("movie_name").value.trim();
+    const code=document.getElementById("promo_code").value.trim();
     const season = document.getElementById("season_select").value;
 
     if(!name || !email || !title){
@@ -244,27 +234,24 @@ document.getElementById("submit_request").addEventListener("click", async functi
         return;
     }
 
-    // Série >3 saisons sans promo
     if(result.type==="Série" && result.seasons>3 && code!=="AMIDEPASCAL"){
         alert("DEMANDE REJETÉE : Vous n'êtes pas Premium !");
-        togglePromoField(result.seasons, type);
+        togglePromoField(result.seasons);
         return;
     }
 
-    togglePromoField(result.seasons, type);
+    togglePromoField(result.seasons);
 
-    // Envoi WhatsApp
     const phone = "22996326185";
     const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
                     `👤 *Nom:* ${name}%0A`+
                     `📌 *Type:* ${type}%0A`+
-                    (type==="Série"?`📺 *Saison:* ${season}%0A`:"")+
                     `🎞️ *Titre:* ${title}%0A`+
+                    (type==="Série"?`🗂️ *Saison:* ${season}%0A`:"")+
                     (code==="AMIDEPASCAL"?`🔑 *Code:* ${code} (VÉRIFIÉ ✅)%0A`:"")+
                     `%0A_Demande effectuée depuis le site web._`;
     window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
 
-    // Envoi mail
     emailjs.send("service_7njbqib","template_dzcv9gj",{
         user_name:name,
         user_email:email,
@@ -277,6 +264,19 @@ document.getElementById("submit_request").addEventListener("click", async functi
 
     alert("✅ Votre demande a été envoyée et un mail de confirmation vous a été envoyé !");
 });
+
+// Typing effect logo
+const logoText = "CinéVerse";
+const logoElement = document.getElementById("animatedLogo");
+let i = 0;
+function typeLogo() {
+    if(i < logoText.length){
+        logoElement.innerHTML += logoText.charAt(i);
+        i++;
+        setTimeout(typeLogo,120);
+    } else { logoElement.style.borderRight = "none"; }
+}
+typeLogo();
 </script>
 
 </body>
