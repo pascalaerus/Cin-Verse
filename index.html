@@ -7,10 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Manifest PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#e50914">
-
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
@@ -142,10 +138,10 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 </footer>
 
 <script>
-// === EmailJS Init ===
+// EmailJS Init
 emailjs.init("nwNk-9LbyO0XHfwql");
 
-// === TMDB API key ===
+// TMDB API key
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
 
 // Vérifie le type et saisons via TMDB
@@ -156,7 +152,8 @@ async function checkContentType(title){
         const tv = data.results[0];
         const detailRes = await fetch(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${TMDB_API_KEY}&language=fr`);
         const detailData = await detailRes.json();
-        return {type:"Série", seasons:detailData.number_of_seasons || 1};
+        const seasons = detailData.number_of_seasons || 1;
+        return {type:"Série", seasons:seasons};
     }
     res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
     data = await res.json();
@@ -164,13 +161,41 @@ async function checkContentType(title){
     return {type:"Inconnu", seasons:0};
 }
 
-// Affiche le champ promo si >3 saisons
 function togglePromoField(seasons){
     const promoDiv = document.getElementById("promo-field");
     promoDiv.style.display = seasons>3 ? "block" : "none";
 }
 
-// Bouton demande
+// LocalStorage pour Mes demandes
+function saveRequestLocally(request){
+    let requests = JSON.parse(localStorage.getItem('cineverse_requests')) || [];
+    requests.push(request);
+    localStorage.setItem('cineverse_requests', JSON.stringify(requests));
+}
+
+function showMyRequests(){
+    let requests = JSON.parse(localStorage.getItem('cineverse_requests')) || [];
+    if(requests.length===0){
+        alert("📭 Vous n'avez fait aucune demande pour le moment !");
+        return;
+    }
+    let message="📄 Vos demandes :\n\n";
+    requests.forEach((req,index)=>{
+        message += `${index+1}. ${req.type} : "${req.title}" (${req.seasons} saisons)\n`;
+    });
+    alert(message);
+}
+
+// Ajouter bouton Mes demandes
+let myRequestsBtn = document.createElement('button');
+myRequestsBtn.textContent = "Mes demandes";
+myRequestsBtn.className = "btn";
+myRequestsBtn.style.background="#ff9900";
+myRequestsBtn.style.marginTop="10px";
+myRequestsBtn.onclick=showMyRequests;
+document.querySelector('.container').appendChild(myRequestsBtn);
+
+// Envoi demande
 document.getElementById("submit_request").addEventListener("click", async function(){
     const name=document.getElementById("user_name").value.trim();
     const email=document.getElementById("user_email").value.trim();
@@ -223,19 +248,11 @@ document.getElementById("submit_request").addEventListener("click", async functi
         status:"Demande reçue !"
     });
 
-    alert("✅ Votre demande a été envoyée et un mail de confirmation vous a été envoyé !");
-});
+    // Sauvegarde local pour Mes demandes
+    saveRequestLocally({title:title,type:type,seasons:result.seasons});
 
-// === PWA Service Worker ===
-if('serviceWorker' in navigator){
-    window.addEventListener('load', function(){
-        navigator.serviceWorker.register('/service-worker.js').then(function(reg){
-            console.log('Service Worker registered:', reg.scope);
-        }).catch(function(err){
-            console.log('Service Worker registration failed:', err);
-        });
-    });
-}
+    alert("✅ Votre demande a été envoyée et enregistrée ! Vous pouvez consulter vos demandes dans 'Mes demandes'.");
+});
 </script>
 
 </body>
