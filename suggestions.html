@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Suggestions | CinéVerse</title>
+<title>CinéVerse | Suggestions</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
@@ -18,141 +18,164 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height:1.6; }
-
-header {
-    height: 25vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-}
-
-#titleSuggestions {
-    font-size:4rem;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:3px;
-    background: linear-gradient(45deg, #e50914, #00aaff, #ffcc00, #2df7ff);
-    background-size: 400% 400%;
-    -webkit-background-clip: text;
-    color: transparent;
-    animation: colorAnim 8s ease infinite;
-}
-
-@keyframes colorAnim {
-    0% {background-position:0% 50%;}
-    50% {background-position:100% 50%;}
-    100% {background-position:0% 50%;}
-}
-
-.container { max-width:900px; margin:20px auto 50px; padding:0 20px; }
-
-.section-title { text-align:center; margin:40px 0 20px; font-size:1.6rem; color: var(--text-light); border-left:4px solid var(--primary-color); padding-left:10px; display:inline-block; }
-
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:40px; }
-
-.card { background: var(--card-bg); padding:25px; border-radius:15px; text-align:center; transition:0.3s; border:1px solid #222; }
-.card:hover { transform:translateY(-5px); border-color: var(--primary-color); }
+header { height: 20vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(15,15,15,1)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1350&q=80'); background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;}
+.logo { font-size:3rem; font-weight:700; color: var(--primary-color); text-transform:uppercase; letter-spacing:2px; }
+.container { max-width:1000px; margin:20px auto; padding:0 20px; }
+.tabs { display:flex; justify-content:center; margin-bottom:20px; gap:10px; }
+.tab-btn { padding:10px 25px; background:#222; border:none; border-radius:5px; cursor:pointer; color:white; transition:0.3s; font-weight:600; }
+.tab-btn.active { background: var(--primary-color); }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
+.card { background: var(--card-bg); border-radius:15px; padding:15px; border:1px solid #222; display:flex; flex-direction:column; transition:0.3s; }
 .card img { width:100%; border-radius:10px; margin-bottom:10px; }
-.card h3 { margin-bottom:10px; }
-.card p { font-size:0.9rem; color:var(--text-gray); max-height:60px; overflow:hidden; }
-.card .see-more { color: var(--primary-color); cursor:pointer; font-size:0.85rem; display:block; margin-top:5px; text-decoration:underline; }
-.card .btn { margin-top:10px; }
-
-footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8rem; border-top:1px solid #222; margin-top:50px; }
+.card h3 { font-size:1rem; margin-bottom:5px; }
+.card p { font-size:0.9rem; color: var(--text-gray); flex-grow:1; }
+.btn { display:inline-block; padding:10px; background: var(--primary-color); color:white; text-decoration:none; border-radius:5px; font-weight:600; margin-top:5px; text-align:center; cursor:pointer; transition:0.3s; }
+.btn:hover { opacity:0.9; }
+#loadMore { margin:20px auto; display:block; }
+#season-field { margin:10px 0; display:none; }
+#promo-field { margin:10px 0; display:none; border:1px dashed var(--primary-color); padding:10px; border-radius:5px; color:#ffcc00; }
 </style>
 </head>
 <body>
 
 <header>
-    <div id="titleSuggestions">Suggestions</div>
+<div class="logo">CinéVerse</div>
+<p>Découvrez et demandez vos films et séries</p>
 </header>
 
 <div class="container">
+<div class="tabs">
+    <button class="tab-btn active" data-type="movie">Films populaires</button>
+    <button class="tab-btn" data-type="tv">Séries populaires</button>
+</div>
 
-<h2 class="section-title">Films Populaires</h2>
-<div id="moviesGrid" class="grid"></div>
-
-<h2 class="section-title">Séries Populaires</h2>
-<div id="seriesGrid" class="grid"></div>
-
-<footer>
-<p>&copy; 2026 CinéVerse | Créé par Pascal Aérus</p>
-</footer>
+<div id="suggestions" class="grid"></div>
+<button id="loadMore" class="btn">Charger plus</button>
+</div>
 
 <script>
+emailjs.init("nwNk-9LbyO0XHfwql");
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
+let currentType = "movie";
+let page = 1;
 
-// Fonction pour créer les cartes avec poster, résumé, voir plus et bouton demander
-function createCard(item, type) {
+async function fetchSuggestions(type, page) {
+    const res = await fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${TMDB_API_KEY}&language=fr&page=${page}`);
+    const data = await res.json();
+    return data.results;
+}
+
+function truncateText(text, length=120){
+    if(text.length>length) return text.slice(0,length)+'...';
+    return text;
+}
+
+function createCard(item, type){
     const card = document.createElement("div");
     card.className = "card";
+    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : "https://via.placeholder.com/300x450?text=Pas+d'affiche";
+    const title = type==="movie" ? item.title : item.name;
+    const overview = item.overview || "Pas de description disponible.";
+    const seasons = type==="tv" ? item.number_of_seasons || 1 : 1;
 
-    const poster = document.createElement("img");
-    poster.src = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "https://via.placeholder.com/300x450?text=Pas+de+poster";
-    card.appendChild(poster);
+    card.innerHTML = `
+        <img src="${poster}" alt="${title}">
+        <h3>${title}</h3>
+        <p id="overview">${truncateText(overview)}</p>
+        ${overview.length>120?`<button class="btn seeMore">Voir plus</button>`:""}
+        <div id="season-field" style="display:none;">
+            <label>Saison</label>
+            <select id="season_select"></select>
+        </div>
+        <div id="promo-field">Code Promo Premium requis si >3 saisons</div>
+        <button class="btn request-btn">Demander ${type==="movie"?"ce film":"cette série"}</button>
+        <a href="https://ngl.link/pascal_aerus22519" target="_blank" class="btn" style="background:#0088cc; margin-top:5px;">Suggestions anonymes</a>
+    `;
 
-    const title = document.createElement("h3");
-    title.textContent = item.title || item.name;
-    card.appendChild(title);
+    // Voir plus
+    const seeMoreBtn = card.querySelector(".seeMore");
+    if(seeMoreBtn){
+        seeMoreBtn.addEventListener("click", ()=>{
+            const p = card.querySelector("#overview");
+            p.textContent = overview;
+            seeMoreBtn.style.display="none";
+        });
+    }
 
-    const overview = document.createElement("p");
-    overview.textContent = item.overview;
-    card.appendChild(overview);
+    // Demander film/série
+    const requestBtn = card.querySelector(".request-btn");
+    requestBtn.addEventListener("click", async ()=>{
+        const name = prompt("Votre nom :");
+        const email = prompt("Votre email :");
+        if(!name || !email) return alert("Nom et email obligatoires !");
+        let seasonValue = 1;
+        if(type==="tv"){
+            const seasonSelect = card.querySelector("#season_select");
+            seasonSelect.innerHTML="";
+            for(let i=1;i<=seasons;i++){
+                const opt = document.createElement("option");
+                opt.value=i; opt.textContent="Saison "+i;
+                seasonSelect.appendChild(opt);
+            }
+            card.querySelector("#season-field").style.display="block";
+            seasonValue = prompt(`Saison souhaitée (1-${seasons}) :`) || 1;
+            if(seasons>3){
+                const code = prompt("Série >3 saisons, code Premium :");
+                if(code!=="AMIDEPASCAL") return alert("Vous n'êtes pas Premium !");
+            }
+        }
 
-    const seeMore = document.createElement("span");
-    seeMore.textContent = "Voir plus";
-    seeMore.className = "see-more";
-    seeMore.onclick = () => alert(item.overview);
-    card.appendChild(seeMore);
-
-    const btn = document.createElement("button");
-    btn.className = "btn";
-    btn.style.background="#25D366";
-    btn.textContent = `Demander ce ${type}`;
-    btn.onclick = () => {
+        // WhatsApp
         const phone = "22996326185";
-        const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A` +
-                        `👤 *Nom:* Utilisateur%0A` +
-                        `📌 *Type:* ${type}%0A` +
-                        `🎞️ *Titre:* ${item.title || item.name}%0A%0A_Demande effectuée depuis le site web._`;
-        window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-        // EmailJS envoie
+        const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
+                        `👤 *Nom:* ${name}%0A`+
+                        `📌 *Type:* ${type==="movie"?"Film":"Série"}%0A`+
+                        `🎞️ *Titre:* ${title}%0A`+
+                        (type==="tv"?`🎬 *Saison:* ${seasonValue}%0A`:"")+
+                        `%0A_Demande effectuée depuis le site web._`;
+        window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
+
+        // Email
         emailjs.send("service_7njbqib","template_dzcv9gj",{
-            user_name:"Utilisateur",
-            user_email:"inconnu@example.com",
-            content_title:item.title || item.name,
-            content_type:type,
+            user_name:name,
+            user_email:email,
+            content_title:title,
+            content_type:type==="movie"?"Film":"Série",
+            season:seasonValue,
             status:"Demande reçue !"
         });
-        alert("✅ Votre demande a été envoyée !");
-    };
-    card.appendChild(btn);
+
+        alert("✅ Demande envoyée et mail de confirmation reçu !");
+    });
 
     return card;
 }
 
-// Fetch TMDB popular movies
-async function fetchMovies() {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=fr&page=1`);
-    const data = await res.json();
-    const grid = document.getElementById("moviesGrid");
-    data.results.forEach(item => grid.appendChild(createCard(item,"Film")));
+async function loadSuggestions(){
+    const suggestionsDiv = document.getElementById("suggestions");
+    const results = await fetchSuggestions(currentType, page);
+    results.forEach(item=>{
+        suggestionsDiv.appendChild(createCard(item,currentType));
+    });
+    page++;
 }
 
-// Fetch TMDB popular series
-async function fetchSeries() {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_API_KEY}&language=fr&page=1`);
-    const data = await res.json();
-    const grid = document.getElementById("seriesGrid");
-    data.results.forEach(item => grid.appendChild(createCard(item,"Série")));
-}
+// Onglets
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentType = btn.dataset.type;
+        page=1;
+        document.getElementById("suggestions").innerHTML="";
+        loadSuggestions();
+    });
+});
 
-fetchMovies();
-fetchSeries();
+document.getElementById("loadMore").addEventListener("click", loadSuggestions);
 
-// EmailJS init
-emailjs.init("nwNk-9LbyO0XHfwql");
+// Premier chargement
+loadSuggestions();
 </script>
 
 </body>
