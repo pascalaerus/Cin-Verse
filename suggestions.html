@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinéVerse | Suggestions</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --primary-color: #e50914;
+    --bg-dark: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --text-light: #ffffff;
+    --text-gray: #b3b3b3;
+}
+body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-light); margin:0; }
+header { height:20vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(15,15,15,1)); display:flex; justify-content:center; align-items:center; }
+header h1 { color: var(--primary-color); font-size:2rem; }
+.container { max-width:1000px; margin:20px auto; padding:0 20px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; }
+.card { background: var(--card-bg); padding:20px; border-radius:10px; border:1px solid #222; display:flex; flex-direction:column; justify-content:space-between; }
+.card h3 { margin:10px 0 5px; }
+.card p { font-size:0.9rem; color: var(--text-gray); flex-grow:1; }
+.card button { background: var(--primary-color); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:600; margin-top:10px; }
+.card button:hover { opacity:0.9; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>Suggestions de Films et Séries</h1>
+</header>
+
+<div class="container">
+<div class="grid" id="suggestionsGrid">
+    <!-- Les suggestions TMDB seront injectées ici -->
+</div>
+</div>
+
+<script>
+const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
+const suggestionsGrid = document.getElementById("suggestionsGrid");
+
+// Exemple : liste de suggestions par défaut
+const suggestions = ["John Wick", "Prison Break", "Lupin", "The Witcher", "Naruto", "One Piece"];
+
+async function fetchSuggestion(title){
+    // Cherche d'abord films
+    let res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
+    let data = await res.json();
+    if(data.results && data.results.length>0){
+        const movie = data.results[0];
+        return {title:movie.title, overview:movie.overview, type:"Film"};
+    }
+    // Cherche séries
+    res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
+    data = await res.json();
+    if(data.results && data.results.length>0){
+        const tv = data.results[0];
+        return {title:tv.name, overview:tv.overview, type:"Série"};
+    }
+    return {title, overview:"Résumé non disponible.", type:"Inconnu"};
+}
+
+function createCard(item){
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+        <h3>${item.title} (${item.type})</h3>
+        <p>${item.overview}</p>
+        <button onclick="requestContent('${item.title}','${item.type}')">Demander ce ${item.type}</button>
+    `;
+    suggestionsGrid.appendChild(card);
+}
+
+function requestContent(title,type){
+    const phone = "22996326185";
+    const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A📌 *Type:* ${type}%0A🎞️ *Titre:* ${title}%0A_Demande effectuée depuis la page Suggestions._`;
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+}
+
+// Génération des cartes
+suggestions.forEach(async title => {
+    const item = await fetchSuggestion(title);
+    createCard(item);
+});
+</script>
+
+</body>
+</html>
