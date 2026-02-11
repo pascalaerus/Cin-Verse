@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CinéVerse | Films, Séries & Mangas</title>
+<title>CinéVerse | Suggestions</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
@@ -15,266 +15,65 @@
     --input-bg: #333333;
     --text-light: #ffffff;
     --text-gray: #b3b3b3;
-    --btn-anon: linear-gradient(45deg,#ff6f61,#f7b42c,#6a11cb,#00d2ff);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height:1.6; }
-header {
-    height: 35vh;
-    display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
-}
-#titleCineVerse {
-    font-size:4rem; font-weight:700; text-transform:uppercase; letter-spacing:3px;
-    background: linear-gradient(45deg, #e50914, #00aaff, #ffcc00, #2df7ff);
-    -webkit-background-clip: text; color: transparent;
-    animation: colorAnim 5s linear infinite;
-}
-@keyframes colorAnim {
-    0% {background-position:0% 50%;}
-    50% {background-position:100% 50%;}
-    100% {background-position:0% 50%;}
-}
-header p { margin-top:10px; font-size:1.2rem; color: var(--text-gray); }
-.container { max-width:900px; margin:20px auto 50px; padding:0 20px; }
-.section-title { text-align:center; margin:40px 0 20px; font-size:1.6rem; color: var(--text-light); border-left:4px solid var(--primary-color); padding-left:10px; display:inline-block; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:40px; }
-.card { background: var(--card-bg); padding:25px; border-radius:15px; text-align:center; transition:0.3s; border:1px solid #222; }
+header { height: 20vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; margin-bottom:20px; }
+h1 { font-size:3rem; font-weight:900; margin-bottom:10px; background: linear-gradient(90deg, #E50914,#00A8E1,#1FC1F3,#FF003C,#00A8E1,#FFFFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 5s linear infinite; }
+@keyframes gradientMove {0% {background-position:0% 50%;}50% {background-position:100% 50%;}100% {background-position:0% 50%;}}
+.container { max-width:1100px; margin:0 auto; padding:0 20px; }
+.tabs { display:flex; justify-content:center; gap:20px; margin-bottom:20px; }
+.tab { padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; background:#222; transition:0.3s; }
+.tab.active { background: var(--primary-color); color:#fff; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
+.card { background: var(--card-bg); padding:15px; border-radius:15px; text-align:center; border:1px solid #222; transition:0.3s; display:flex; flex-direction:column; }
 .card:hover { transform:translateY(-5px); border-color: var(--primary-color); }
-.card i { font-size:2.5rem; margin-bottom:15px; }
-.btn { display:inline-block; padding:12px 25px; background: var(--primary-color); color:white; text-decoration:none; border-radius:5px; font-weight:600; margin-top:10px; transition:0.3s; border:none; cursor:pointer; width:100%; text-align:center; }
+.card img { width:100%; border-radius:10px; margin-bottom:10px; }
+.card h3 { font-size:1.1rem; margin-bottom:10px; }
+.card p { font-size:0.9rem; color: var(--text-gray); max-height:3em; overflow:hidden; transition:0.3s; }
+.card p.expanded { max-height:100em; }
+.btn { margin-top:auto; padding:10px; border:none; border-radius:8px; cursor:pointer; font-weight:600; background:#25D366; color:#fff; transition:0.3s; }
 .btn:hover { opacity:0.9; }
-.btn-anon-btn { background: var(--btn-anon); background-size:400% 400%; animation: gradAnim 6s ease infinite; border:none; color:white; cursor:pointer; font-weight:600; padding:12px 20px; border-radius:8px; margin-top:10px; display:inline-block; text-decoration:none; }
-@keyframes gradAnim { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
-.box { background: var(--card-bg); padding:30px; border-radius:15px; margin-bottom:30px; border:1px solid #222; }
-.form-group { margin-bottom:15px; }
-.form-group label { display:block; margin-bottom:5px; color: var(--text-gray); font-size:0.9rem; }
-.form-group input, .form-group select { width:100%; padding:12px; border-radius:5px; border:1px solid #444; background: var(--input-bg); color:white; font-family:inherit; }
-#promo-field { display:none; margin-top:15px; border:1px dashed var(--primary-color); padding:10px; border-radius:5px; }
-.contact-links { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:20px; }
-.contact-item { color: var(--text-gray); text-decoration:none; transition:0.3s; font-size:0.9rem; display:flex; align-items:center; gap:8px; }
-.contact-item:hover { color: var(--primary-color); }
-footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8rem; border-top:1px solid #222; margin-top:50px; }
+#anonymousBtn { display:block; text-align:center; margin:30px auto; padding:12px 20px; background: linear-gradient(45deg,#E50914,#00A8E1,#1FC1F3); border-radius:12px; font-weight:700; color:white; text-decoration:none; transition:0.3s; }
+#anonymousBtn:hover { transform:scale(1.05); opacity:0.9; }
 </style>
 </head>
 <body>
 
 <header>
-    <div id="titleCineVerse">CinéVerse</div>
-    <p>Demandez vos films et séries préférés</p>
+<h1>CinéVerse Suggestions</h1>
+<p>Découvrez les films et séries populaires, et demandez ce que vous voulez !</p>
 </header>
 
 <div class="container">
-
-<h2 class="section-title">Rejoindre les Groupes</h2>
-<div class="grid">
-    <div class="card">
-        <i class="fab fa-whatsapp" style="color:#25D366;"></i>
-        <h3>Films & Séries</h3>
-        <a href="https://chat.whatsapp.com/KUrZRWKL7CpDn6zwXUcEgm?mode=gi_t" class="btn" target="_blank">Rejoindre</a>
-    </div>
-    <div class="card">
-        <i class="fab fa-whatsapp" style="color:#25D366;"></i>
-        <h3>Mangas</h3>
-        <a href="https://chat.whatsapp.com/BdCsIhDN0JGIDKXndF04Qv?mode=gi_t" class="btn" target="_blank">Rejoindre</a>
-    </div>
-    <div class="card">
-        <i class="fab fa-telegram" style="color:#0088cc;"></i>
-        <h3>Telegram</h3>
-        <a href="https://t.me/filmsetseriescineverse" class="btn" target="_blank">S'abonner</a>
-    </div>
+<div class="tabs">
+<div class="tab active" data-type="movie">Films populaires</div>
+<div class="tab" data-type="tv">Séries populaires</div>
 </div>
 
-<h2 class="section-title">Faire une demande</h2>
-<div class="box">
-<form id="movieForm">
-<div class="form-group">
-    <label>Votre Nom</label>
-    <input type="text" id="user_name" placeholder="Ex: Jean" required>
-</div>
-<div class="form-group">
-    <label>Votre Email</label>
-    <input type="email" id="user_email" placeholder="Ex: jean@gmail.com" required>
-</div>
-<div class="form-group">
-    <label>Type de contenu</label>
-    <select id="content_type">
-        <option value="Film">Film</option>
-        <option value="Série">Série</option>
-        <option value="Manga">Manga</option>
-    </select>
-</div>
-<div class="form-group">
-    <label>Titre (Nom exact)</label>
-    <input type="text" id="movie_name" placeholder="Ex: John Wick, Prison Break..." required>
-</div>
-<div class="form-group" id="season-field" style="display:none;">
-    <label>Saison (pour les séries)</label>
-    <select id="season_select">
-        <option value="1">Saison 1</option>
-        <option value="2">Saison 2</option>
-        <option value="3">Saison 3</option>
-        <option value="4">Saison 4</option>
-        <option value="5">Saison 5</option>
-    </select>
-</div>
-<div id="promo-field">
-    <label style="color:#ffcc00;"><i class="fas fa-key"></i> Code Promo Premium Requis</label>
-    <input type="text" id="promo_code" placeholder="Entrez votre code ici">
-    <small style="color:#b3b3b3;">Les séries de plus de 3 saisons sont réservées aux membres Premium.</small>
-</div>
-<button type="button" id="submit_request" class="btn" style="background:#25D366;margin-top:20px;">
-    <i class="fab fa-whatsapp"></i> Envoyer ma demande
-</button>
-</form>
-<a href="https://ngl.link/pascal_aerus22519" class="btn-anon-btn">Suggestions Anonymes</a>
-</div>
+<div id="suggestionsGrid" class="grid"></div>
 
-<h2 class="section-title">Suggestions</h2>
-<div style="text-align:center; margin-bottom:40px;">
-    <a href="suggestions.html" class="btn">Voir les suggestions</a>
+<a href="https://ngl.link/pascal_aerus22519" id="anonymousBtn" target="_blank">💌 Suggestions anonymes</a>
 </div>
-
-<!-- Stickman Battle -->
-<div style="text-align:center; margin:50px 0;">
-  <canvas id="stickmanBattle" width="800" height="300" style="background:#111; border-radius:15px;"></canvas>
-</div>
-
-<div class="contact-links">
-    <a href="https://wa.me/22996326185" class="contact-item" target="_blank"><i class="fab fa-whatsapp"></i> +229 96 32 61 85</a>
-    <a href="https://t.me/unknown270305" class="contact-item" target="_blank"><i class="fab fa-telegram"></i> @unknown270305</a>
-    <a href="mailto:pascal270305@gmail.com" class="contact-item"><i class="fas fa-envelope"></i> pascal270305@gmail.com</a>
-    <a href="https://www.facebook.com/PascalAérus" class="contact-item" target="_blank"><i class="fab fa-facebook"></i> Pascal Aérus</a>
-</div>
-
-<footer>
-<p>&copy; 2026 CinéVerse | Créé par Pascal Aérus</p>
-</footer>
 
 <script>
-// EmailJS Init
 emailjs.init("nwNk-9LbyO0XHfwql");
-
-// TMDB API key
 const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
+let currentType = "movie";
+let page = 1;
 
-// Vérifie type et saisons
-async function checkContentType(title){
-    // Films
-    let res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
-    let data = await res.json();
-    if(data.results && data.results.length > 0) return {type:"Film", seasons:1};
-
-    // Séries
-    res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
-    data = await res.json();
-    if(data.results && data.results.length > 0){
-        const tv = data.results[0];
-        const detailRes = await fetch(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${TMDB_API_KEY}&language=fr`);
-        const detailData = await detailRes.json();
-        return {type:"Série", seasons:detailData.number_of_seasons || 1};
-    }
-
-    return {type:"Inconnu", seasons:0};
-}
-
-// Affiche promo et saison
-function togglePromoSeason(seasons,type){
-    document.getElementById("promo-field").style.display = (seasons>3) ? "block" : "none";
-    document.getElementById("season-field").style.display = (type==="Série") ? "block" : "none";
-}
-
-document.getElementById("submit_request").addEventListener("click", async function(){
-    const name=document.getElementById("user_name").value.trim();
-    const email=document.getElementById("user_email").value.trim();
-    const type=document.getElementById("content_type").value;
-    const title=document.getElementById("movie_name").value.trim();
-    const code=document.getElementById("promo_code").value.trim();
-    const season=document.getElementById("season_select").value;
-
-    if(!name || !email || !title){
-        alert("Veuillez remplir tous les champs !");
-        return;
-    }
-
-    const result = await checkContentType(title);
-
-    if(result.type==="Inconnu"){
-        alert(`❌ Erreur : "${title}" n'a pas été trouvé sur TMDB.`);
-        return;
-    }
-    if(type !== result.type){
-        alert(`❌ Erreur : "${title}" est un ${result.type}, pas une ${type}.`);
-        return;
-    }
-    togglePromoSeason(result.seasons,type);
-
-    if(result.type==="Série" && result.seasons>3 && code!=="AMIDEPASCAL"){
-        alert("DEMANDE REJETÉE : Vous n'êtes pas Premium !");
-        return;
-    }
-
-    // WhatsApp
-    const phone = "22996326185";
-    const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
-                    `👤 *Nom:* ${name}%0A`+
-                    `📌 *Type:* ${type}%0A`+
-                    `🎞️ *Titre:* ${title}%0A`+
-                    (type==="Série"?`📺 *Saison:* ${season}%0A`:"")+
-                    (code==="AMIDEPASCAL"?`🔑 *Code:* ${code} (VÉRIFIÉ ✅)%0A`:"")+
-                    `%0A_Demande effectuée depuis le site web._`;
-    window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
-
-    // EmailJS
-    emailjs.send("service_7njbqib","template_dzcv9gj",{
-        user_name:name,
-        user_email:email,
-        content_title:title,
-        content_type:type,
-        seasons:result.seasons,
-        season_request:season,
-        status:"Demande reçue !"
+const grid = document.getElementById("suggestionsGrid");
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(tab => {
+    tab.addEventListener("click", ()=>{
+        tabs.forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+        currentType = tab.dataset.type;
+        page = 1;
+        grid.innerHTML="";
+        loadSuggestions();
     });
-
-    alert("✅ Votre demande a été envoyée et un mail de confirmation vous a été envoyé !");
 });
 
-// --- Stickman Battle ---
-const canvas = document.getElementById("stickmanBattle");
-const ctx = canvas.getContext("2d");
-let stickman1 = {x:150,y:200,color:"#e50914",armAngle:0,direction:1};
-let stickman2 = {x:650,y:200,color:"#00aaff",armAngle:0,direction:-1};
-let punchEffect = 0;
-function drawStickman(sm){
-    ctx.strokeStyle=sm.color; ctx.lineWidth=4;
-    ctx.beginPath(); ctx.arc(sm.x,sm.y-50,20,0,Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(sm.x,sm.y-30); ctx.lineTo(sm.x,sm.y+40); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(sm.x,sm.y-20);
-    let armX = sm.x+Math.sin(sm.armAngle)*40*sm.direction;
-    let armY = sm.y-20-Math.cos(sm.armAngle)*10; ctx.lineTo(armX,armY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(sm.x,sm.y+40); ctx.lineTo(sm.x-20,sm.y+80); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(sm.x,sm.y+40); ctx.lineTo(sm.x+20,sm.y+80); ctx.stroke();
-}
-function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    stickman1.armAngle+=0.05*stickman1.direction;
-    if(stickman1.armAngle>0.5||stickman1.armAngle<-0.5) stickman1.direction*=-1;
-    stickman2.armAngle+=0.05*stickman2.direction;
-    if(stickman2.armAngle>0.5||stickman2.armAngle<-0.5) stickman2.direction*=-1;
-    drawStickman(stickman1);
-    drawStickman(stickman2);
-    let arm1X=stickman1.x+Math.sin(stickman1.armAngle)*40;
-    let arm2X=stickman2.x+Math.sin(stickman2.armAngle)*-40;
-    if(Math.abs(arm1X-arm2X)<20) punchEffect=10;
-    if(punchEffect>0){
-        ctx.fillStyle="red";
-        ctx.beginPath();
-        ctx.arc((stickman1.x+stickman2.x)/2,180,punchEffect,0,Math.PI*2); ctx.fill();
-        punchEffect-=0.5;
-    }
-    requestAnimationFrame(animate);
-}
-animate();
-</script>
-
-</body>
-</html>
+async function loadSuggestions(){
+    const res = await fetch(`
