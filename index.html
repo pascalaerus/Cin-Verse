@@ -121,6 +121,10 @@ footer { text-align:center; padding:40px; color: var(--text-gray); font-size:0.8
 <button type="button" id="submit_request" class="btn" style="background:#25D366;margin-top:20px;">
     <i class="fab fa-whatsapp"></i> Envoyer ma demande
 </button>
+
+<button type="button" id="view_requests" class="btn" style="background:#ffcc00;margin-top:20px;">
+    Mes demandes
+</button>
 </form>
 </div>
 
@@ -146,19 +150,26 @@ const TMDB_API_KEY = "343afb1d4a8c081ad737a2aef2f96d9a";
 
 // Vérifie le type et saisons via TMDB
 async function checkContentType(title){
-    let res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
-    let data = await res.json();
-    if(data.results && data.results.length>0){
-        const tv = data.results[0];
-        const detailRes = await fetch(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${TMDB_API_KEY}&language=fr`);
-        const detailData = await detailRes.json();
-        const seasons = detailData.number_of_seasons || 1;
-        return {type:"Série", seasons:seasons};
+    try {
+        let res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
+        let data = await res.json();
+        if(data.results && data.results.length>0){
+            const tv = data.results[0];
+            const detailRes = await fetch(`https://api.themoviedb.org/3/tv/${tv.id}?api_key=${TMDB_API_KEY}&language=fr`);
+            const detailData = await detailRes.json();
+            const seasons = detailData.number_of_seasons || 1;
+            return {type:"Série", seasons:seasons};
+        }
+
+        res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
+        data = await res.json();
+        if(data.results && data.results.length>0) return {type:"Film", seasons:1};
+
+        return {type:"Inconnu", seasons:0};
+    } catch(e){
+        console.error("Erreur API TMDB:", e);
+        return {type:"Inconnu", seasons:0};
     }
-    res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=fr`);
-    data = await res.json();
-    if(data.results && data.results.length>0) return {type:"Film", seasons:1};
-    return {type:"Inconnu", seasons:0};
 }
 
 function togglePromoField(seasons){
@@ -166,42 +177,31 @@ function togglePromoField(seasons){
     promoDiv.style.display = seasons>3 ? "block" : "none";
 }
 
-// LocalStorage pour Mes demandes
 function saveRequestLocally(request){
-    let requests = JSON.parse(localStorage.getItem('cineverse_requests')) || [];
-    requests.push(request);
-    localStorage.setItem('cineverse_requests', JSON.stringify(requests));
+    let existing = JSON.parse(localStorage.getItem("cinverse_requests") || "[]");
+    existing.push(request);
+    localStorage.setItem("cinverse_requests", JSON.stringify(existing));
 }
 
-function showMyRequests(){
-    let requests = JSON.parse(localStorage.getItem('cineverse_requests')) || [];
-    if(requests.length===0){
+function showRequests(){
+    let existing = JSON.parse(localStorage.getItem("cinverse_requests") || "[]");
+    if(existing.length===0){
         alert("📭 Vous n'avez fait aucune demande pour le moment !");
         return;
     }
-    let message="📄 Vos demandes :\n\n";
-    requests.forEach((req,index)=>{
-        message += `${index+1}. ${req.type} : "${req.title}" (${req.seasons} saisons)\n`;
+    let msg = "📋 Vos demandes :\n\n";
+    existing.forEach((r,i)=>{
+        msg += `${i+1}. ${r.title} (${r.type}) - ${r.seasons} saisons\n`;
     });
-    alert(message);
+    alert(msg);
 }
 
-// Ajouter bouton Mes demandes
-let myRequestsBtn = document.createElement('button');
-myRequestsBtn.textContent = "Mes demandes";
-myRequestsBtn.className = "btn";
-myRequestsBtn.style.background="#ff9900";
-myRequestsBtn.style.marginTop="10px";
-myRequestsBtn.onclick=showMyRequests;
-document.querySelector('.container').appendChild(myRequestsBtn);
-
-// Envoi demande
 document.getElementById("submit_request").addEventListener("click", async function(){
-    const name=document.getElementById("user_name").value.trim();
-    const email=document.getElementById("user_email").value.trim();
-    const type=document.getElementById("content_type").value;
-    const title=document.getElementById("movie_name").value.trim();
-    const code=document.getElementById("promo_code").value.trim();
+    const name = document.getElementById("user_name").value.trim();
+    const email = document.getElementById("user_email").value.trim();
+    const type = document.getElementById("content_type").value;
+    const title = document.getElementById("movie_name").value.trim();
+    const code = document.getElementById("promo_code").value.trim();
 
     if(!name || !email || !title){
         alert("Veuillez remplir tous les champs !");
@@ -228,7 +228,16 @@ document.getElementById("submit_request").addEventListener("click", async functi
 
     togglePromoField(result.seasons);
 
-    // WhatsApp
+    const requestData = {
+        title: title,
+        type: type,
+        seasons: result.seasons,
+        code: code==="AMIDEPASCAL"?"Premium": "Standard",
+        date: new Date().toLocaleString()
+    };
+
+    saveRequestLocally(requestData);
+
     const phone = "22996326185";
     const message = `🎬 *NOUVELLE DEMANDE CINÉVERSE* 🎬%0A%0A`+
                     `👤 *Nom:* ${name}%0A`+
@@ -238,21 +247,19 @@ document.getElementById("submit_request").addEventListener("click", async functi
                     `%0A_Demande effectuée depuis le site web._`;
     window.open(`https://wa.me/${phone}?text=${message}`,'_blank');
 
-    // EmailJS
     emailjs.send("service_7njbqib","template_dzcv9gj",{
-        user_name:name,
-        user_email:email,
-        content_title:title,
-        content_type:type,
-        seasons:result.seasons,
-        status:"Demande reçue !"
-    });
+        user_name: name,
+        user_email: email,
+        content_title: title,
+        content_type: type,
+        seasons: result.seasons,
+        status: "Demande reçue !"
+    }).then(()=>console.log("Email envoyé"),err=>console.error(err));
 
-    // Sauvegarde local pour Mes demandes
-    saveRequestLocally({title:title,type:type,seasons:result.seasons});
-
-    alert("✅ Votre demande a été envoyée et enregistrée ! Vous pouvez consulter vos demandes dans 'Mes demandes'.");
+    alert("✅ Votre demande a été envoyée et un mail de confirmation vous a été envoyé !");
 });
+
+document.getElementById("view_requests").addEventListener("click", showRequests);
 </script>
 
 </body>
